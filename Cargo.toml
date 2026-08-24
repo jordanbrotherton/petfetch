@@ -1,0 +1,10 @@
+[package]
+name = "petfetch"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Rust pets. Now you feel a tinge of responsibility whenever you open a terminal."
+
+[dependencies]
+rand = "0.10.2"
+sysinfo = "0.39.6"
