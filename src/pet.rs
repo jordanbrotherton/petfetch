@@ -51,6 +51,7 @@ impl Pet {
         }
     }
 
+    /// Prints the fetch of your pet.
     pub fn check(&self) {
         let art = self.skin.get_art(self.get_mood());
 
@@ -69,8 +70,8 @@ impl Pet {
             format!("OS:      {}", os),
             format!("Uptime:  {}m", uptime_mins),
             format!("Memory:  {}MB / {}MB", mem_used, mem_total),
-            format!("Food: {}/100", self.food),
-            format!("Joy: {}/100", self.joy),
+            format!("Food:    {}% / 100%", self.food),
+            format!("Joy:     {}% / 100%", self.joy),
         ];
 
         let max_lines = art.len().max(stats.len());
@@ -82,22 +83,24 @@ impl Pet {
         }
     }
 
+    /// Obtains the current mood of your pet.
     fn get_mood(&self) -> PetMoods {
         if self.is_dead {
-            return PetMoods::Dead;
+            PetMoods::Dead
         } else if self.ill {
-            return PetMoods::Ill;
+            PetMoods::Ill
         } else if self.bladder > 80 {
-            return PetMoods::Bladder;
+            PetMoods::Bladder
         } else if self.food < 25 {
-            return PetMoods::Hungry;
+            PetMoods::Hungry
         } else if self.food > 70 && self.joy > 70 {
-            return PetMoods::Happy;
+            PetMoods::Happy
         } else {
-            return PetMoods::Normal;
+            PetMoods::Normal
         }
     }
 
+    /// Updates your pet's needs.
     pub fn update(&mut self) {
         if self.is_dead {
             return;
@@ -141,6 +144,8 @@ impl Pet {
         }
     }
 
+    /// Feeds your pet.
+    /// Returns true if fed, false if not.
     pub fn feed(&mut self) -> bool {
         if self.food >= 100 {
             return false; // <_< theyre full
@@ -151,6 +156,8 @@ impl Pet {
         return true;
     }
 
+    /// Relieves your pet's bladder.
+    /// Returns true if successful, false if not.
     pub fn toilet(&mut self) -> bool {
         if self.bladder == 0 {
             return false; // nothing there
@@ -160,6 +167,8 @@ impl Pet {
         return true;
     }
 
+    /// Plays a guessing game with your pet.
+    /// Returns a PlayResult determining whether it played or if you won/lost.
     pub fn play(&mut self, choice: bool) -> PlayResult {
         if self.food < 10 {
             return PlayResult::DeniedHungry;
@@ -182,6 +191,8 @@ impl Pet {
         }
     }
 
+    /// Heals your sick pet.
+    /// Returns MedicateResult, giving a reason if they were/weren't healed.
     pub fn medicate(&mut self) -> MedicateResult {
         if self.food == 0 {
             return MedicateResult::DeniedHungry;
@@ -193,16 +204,5 @@ impl Pet {
         self.ill = false;
         self.when_ill = None;
         return MedicateResult::Healed;
-    }
-
-    pub fn save_pet(&self, path: &str) -> std::io::Result<()> {
-        let json = serde_json::to_string(self).unwrap();
-        std::fs::write(path, json)
-    }
-
-    pub fn load_pet(path: &str) -> std::io::Result<Pet> {
-        let json = std::fs::read_to_string(path)?;
-        let pet: Pet = serde_json::from_str(&json).unwrap();
-        Ok(pet)
     }
 }
