@@ -6,5 +6,9 @@ license = "MIT OR Apache-2.0"
 description = "Rust pets. Now you feel a tinge of responsibility whenever you open a terminal."
 
 [dependencies]
+clap = { version = "4.6.6", features = ["derive"] }
+dirs = "6.0.0"
 rand = "0.10.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
 sysinfo = "0.39.6"

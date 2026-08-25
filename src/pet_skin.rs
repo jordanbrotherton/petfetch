@@ -4,6 +4,7 @@ use crate::pet::PetMoods;
 
 // TODO - make this modular
 
+#[derive(serde::Serialize, serde::Deserialize)]
 pub enum PetSkin {
     Blob,
 }

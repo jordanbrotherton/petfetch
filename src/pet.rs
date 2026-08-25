@@ -1,7 +1,8 @@
 use sysinfo::System;
 
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Pet {
-    name: String,
+    pub name: String,
     last_checked: std::time::SystemTime,
     food: u32,
     bladder: u32,
@@ -140,7 +141,7 @@ impl Pet {
         }
     }
 
-    fn feed(&mut self) -> bool {
+    pub fn feed(&mut self) -> bool {
         if self.food >= 100 {
             return false; // <_< theyre full
         }
@@ -150,7 +151,7 @@ impl Pet {
         return true;
     }
 
-    fn toilet(&mut self) -> bool {
+    pub fn toilet(&mut self) -> bool {
         if self.bladder == 0 {
             return false; // nothing there
         }
@@ -159,7 +160,7 @@ impl Pet {
         return true;
     }
 
-    fn play(&mut self, choice: bool) -> PlayResult {
+    pub fn play(&mut self, choice: bool) -> PlayResult {
         if self.food < 10 {
             return PlayResult::DeniedHungry;
         }
@@ -181,7 +182,7 @@ impl Pet {
         }
     }
 
-    fn medicate(&mut self) -> MedicateResult {
+    pub fn medicate(&mut self) -> MedicateResult {
         if self.food == 0 {
             return MedicateResult::DeniedHungry;
         }
@@ -192,5 +193,16 @@ impl Pet {
         self.ill = false;
         self.when_ill = None;
         return MedicateResult::Healed;
+    }
+
+    pub fn save_pet(&self, path: &str) {
+        let json = serde_json::to_string(self).unwrap();
+        std::fs::write(path, json);
+    }
+
+    pub fn load_pet(path: &str) -> std::io::Result<Pet> {
+        let json = std::fs::read_to_string(path)?;
+        let pet: Pet = serde_json::from_str(&json).unwrap();
+        Ok(pet)
     }
 }
