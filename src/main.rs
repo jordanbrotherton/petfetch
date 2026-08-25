@@ -38,7 +38,9 @@ fn main() {
         .join("petfetch")
         .join("pet.json");
 
-    std::fs::create_dir_all(save_path.parent().unwrap());
+    if let Err(e) = std::fs::create_dir_all(save_path.parent().unwrap()) {
+        eprintln!("Warning: failed to create petfetch directory: {}", e);
+    }
 
     let loaded_pet = pet::Pet::load_pet(&save_path.to_string_lossy());
 
@@ -158,5 +160,7 @@ fn interact_pet(mut pet: Pet, save_path: &Path) {
             pet.check();
         }
     }
-    pet.save_pet(&save_path.to_string_lossy());
+    if let Err(e) = pet.save_pet(&save_path.to_string_lossy()) {
+        eprintln!("Warning: failed to save pet: {}", e);
+    }
 }

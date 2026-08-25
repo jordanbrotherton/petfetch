@@ -195,9 +195,9 @@ impl Pet {
         return MedicateResult::Healed;
     }
 
-    pub fn save_pet(&self, path: &str) {
+    pub fn save_pet(&self, path: &str) -> std::io::Result<()> {
         let json = serde_json::to_string(self).unwrap();
-        std::fs::write(path, json);
+        std::fs::write(path, json)
     }
 
     pub fn load_pet(path: &str) -> std::io::Result<Pet> {
