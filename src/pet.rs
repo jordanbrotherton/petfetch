@@ -104,7 +104,7 @@ impl Pet {
         }
 
         let check = self.last_checked.elapsed().unwrap();
-        let check_mins = check.as_secs() / 60;
+        let check_hours = check.as_secs() / 3600;
 
         self.last_checked = std::time::SystemTime::now();
 
@@ -120,8 +120,8 @@ impl Pet {
         let food_decay = crate::config::FOOD_DECAY_RATE as u64;
         let joy_decay = crate::config::JOY_DECAY_RATE as u64;
 
-        let lost_food = check_mins * food_decay;
-        let lost_joy = check_mins * joy_decay;
+        let lost_food = check_hours * food_decay;
+        let lost_joy = check_hours * joy_decay;
 
         self.food = self.food.saturating_sub(lost_food as u32);
         self.joy = self.joy.saturating_sub(lost_joy as u32);
