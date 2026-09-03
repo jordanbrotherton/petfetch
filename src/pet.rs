@@ -1,5 +1,8 @@
 use sysinfo::System;
 
+use crate::pet_skin::PetStore;
+
+/// The primary holding struct for the pet. Has all needs and data associated with the pet.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Pet {
     pub name: String,
@@ -10,9 +13,12 @@ pub struct Pet {
     ill: bool,
     when_ill: Option<std::time::SystemTime>,
     is_dead: bool,
-    skin: crate::pet_skin::PetSkin,
+    skin: String,
 }
 
+/// The moods the pet can have.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum PetMoods {
     Happy,
     Normal,
@@ -22,6 +28,7 @@ pub enum PetMoods {
     Dead,
 }
 
+/// The outcomes for playing with the pet.
 pub enum PlayResult {
     DeniedHungry,
     DeniedBladder,
@@ -30,6 +37,7 @@ pub enum PlayResult {
     Lost,
 }
 
+/// The outcomes for healing the pet.
 pub enum MedicateResult {
     DeniedHungry,
     DeniedNotIll,
@@ -37,7 +45,7 @@ pub enum MedicateResult {
 }
 
 impl Pet {
-    pub fn new(name: String, skin: crate::pet_skin::PetSkin) -> Pet {
+    pub fn new(name: String, skin: String) -> Pet {
         Pet {
             name,
             last_checked: std::time::SystemTime::now(),
@@ -52,8 +60,10 @@ impl Pet {
     }
 
     /// Prints the fetch of your pet.
-    pub fn check(&self) {
-        let art = self.skin.get_art(self.get_mood());
+    pub fn check(&self, store: &PetStore) {
+        let mood = self.get_mood();
+        let art = store.get_sprite(&self.skin, mood);
+        let quote = store.get_quote(&self.skin, mood).replace("{}", &self.name);
 
         let mut sys = System::new();
         sys.refresh_memory();
@@ -77,10 +87,11 @@ impl Pet {
         let max_lines = art.len().max(stats.len());
 
         for i in 0..max_lines {
-            let left = art.get(i).unwrap_or(&"            ");
+            let left = art.get(i).map(|s| s.as_str()).unwrap_or("            ");
             let right = stats.get(i).map(|s| s.as_str()).unwrap_or("");
             println!("{}   {}", left, right);
         }
+        println!("{}", quote);
     }
 
     /// Obtains the current mood of your pet.

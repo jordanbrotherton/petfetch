@@ -3,7 +3,7 @@ mod persistence;
 mod pet;
 mod pet_skin;
 
-use crate::pet::Pet;
+use crate::{pet::Pet, pet_skin::PetStore};
 use clap::{Parser, Subcommand};
 use std::{
     io::{self, Write},
@@ -29,30 +29,46 @@ enum PetCommand {
     Toilet,
     /// Heal your pet when it is ill
     Medicate,
+    /// Adopt a new pet
+    Adopt,
 }
 
 fn main() {
     let save_path: PathBuf = persistence::initialize();
-    let loaded_pet = persistence::load_pet(&save_path.to_string_lossy())
-        .ok()
-        .or_else(adopt_pet);
+    let mut pet_store: PetStore = PetStore::load();
+    pet_store.load_custom();
+
+    let cli = Cli::parse();
+    let loaded_pet = if matches!(cli.command, Some(PetCommand::Adopt)) {
+        adopt_pet(&pet_store, false)
+    } else {
+        persistence::load_pet(&save_path.to_string_lossy())
+            .ok()
+            .or_else(|| adopt_pet(&pet_store, true))
+    };
 
     if let Some(pet) = loaded_pet {
-        interact_pet(pet, &save_path);
+        interact_pet(pet, &save_path, &pet_store, cli.command);
     } else {
         return;
     }
 }
 
 /// Adopts a new pet to inhabit your terminal.
-fn adopt_pet() -> std::option::Option<Pet> {
-    print!("You have no pet. Want to adopt one? [Y/n]: ");
+fn adopt_pet(pet_store: &PetStore, no_file: bool) -> std::option::Option<Pet> {
+    if no_file {
+        print!("You have no pet. Want to adopt one? [Y/n]: ");
+    } else {
+        print!("Do you want to adopt a pet? [Y/n]: ");
+    }
+
     io::stdout().flush().unwrap();
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
 
-    if input.trim().eq_ignore_ascii_case("y") {
+    if input.trim().eq_ignore_ascii_case("y") || input.trim().is_empty() {
+        // Choosing a pet name.
         print!("What is your pet's name? [Pet]: ");
         io::stdout().flush().unwrap();
 
@@ -66,19 +82,39 @@ fn adopt_pet() -> std::option::Option<Pet> {
             trim.to_string()
         };
 
-        Some(Pet::new(name, pet_skin::PetSkin::Blob))
+        // Choosing a pet skin.
+        let mut all_skins: Vec<&str> = pet_store.pets.keys().map(|k| k.as_str()).collect();
+        all_skins.sort();
+
+        println!("Available pets: {}", all_skins.join(", "));
+        print!("What pet do you want? [Blob]: ");
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        let trim = input.trim();
+
+        let skin = if trim.is_empty() {
+            "Blob".to_string()
+        } else if pet_store.pets.contains_key(trim) {
+            trim.to_string()
+        } else {
+            println!("Pet '{}' was not found. Defaulting to 'Blob'...", trim);
+            "Blob".to_string()
+        };
+
+        Some(Pet::new(name, skin))
     } else {
         None
     }
 }
 
 /// Handles the main interaction with a valid pet.
-fn interact_pet(mut pet: Pet, save_path: &Path) {
+fn interact_pet(mut pet: Pet, save_path: &Path, pet_store: &PetStore, command: Option<PetCommand>) {
     pet.update(); // Updates the pet's stats before we start.
 
     // Send off the command to their handler.
-    let cli = Cli::parse();
-    match cli.command {
+    match command {
         Some(PetCommand::Feed) => {
             feed_pet(&mut pet);
         }
@@ -91,8 +127,11 @@ fn interact_pet(mut pet: Pet, save_path: &Path) {
         Some(PetCommand::Medicate) => {
             medicate_pet(&mut pet);
         }
+        Some(PetCommand::Adopt) => {
+            pet.check(pet_store);
+        }
         None => {
-            pet.check();
+            pet.check(pet_store);
         }
     }
 

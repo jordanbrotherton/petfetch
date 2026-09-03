@@ -1,0 +1,58 @@
+{
+  "pets":{
+    "Blob":{
+      "sprites":{
+        "happy": [
+          "  .------.  ",
+          " /  ^‿^   \\ ",
+          "|          |",
+          " \\        / ",
+          "  '------'  "
+        ],
+        "normal": [
+          "  .------.  ",
+          " /        \\ ",
+          "|   ._.    |",
+          " \\        / ",
+          "  '------'  "
+        ],
+        "hungry": [
+          "  .------.  ",
+          " /  . .   \\ ",
+          "|    o     |",
+          " \\        / ",
+          "  '------'  "
+        ],
+        "ill": [
+          "  .------.  ",
+          " / '-_-   \\ ",
+          "|       '  |",
+          " \\  '     / ",
+          "  '------'  "
+        ],
+        "bladder":[
+          "  .------.  ",
+          " /  >_< ' \\ ",
+          "|          |",
+          " \\        / ",
+          "  '------'  "
+        ],
+        "dead": [
+          "  .------.  ",
+          " /        \\ ",
+          "|   x_x    |",
+          " \\        / ",
+          "  '------'  "
+        ]
+      },
+      "quotes": {
+        "happy": ["{} is feeling very ecstatic!", "{} is doing great!", "{} wishes your terminal good luck!"],
+        "normal": ["{} is doing fine.", "{} hopes you do fine work in your terminal.", "{} is feeling casual."],
+        "hungry": ["{} really would like some food.", "You hear that, {}'s tummy is growling!", "It seems {} wants to eat!"],
+        "ill": ["{} is sick!", "{} is not feeling too good...", "{} really would like medicine right now."],
+        "bladder": ["{} can't hold it in!", "{} needs to go!"],
+        "dead": ["{} is dead."]
+      }
+    }
+  }
+}
