@@ -6,6 +6,7 @@ use crate::pet_skin::PetStore;
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Pet {
     pub name: String,
+    created: std::time::SystemTime,
     last_checked: std::time::SystemTime,
     food: u32,
     bladder: u32,
@@ -48,6 +49,7 @@ impl Pet {
     pub fn new(name: String, skin: String) -> Pet {
         Pet {
             name,
+            created: std::time::SystemTime::now(),
             last_checked: std::time::SystemTime::now(),
             food: 100,
             bladder: 0,
@@ -84,12 +86,17 @@ impl Pet {
             format!("Joy:     {}% / 100%", self.joy),
         ];
 
+        let max_art_width = art
+            .iter()
+            .map(|line| line.chars().count())
+            .max()
+            .unwrap_or(0);
         let max_lines = art.len().max(stats.len());
 
         for i in 0..max_lines {
-            let left = art.get(i).map(|s| s.as_str()).unwrap_or("            ");
+            let left = art.get(i).map(|s| s.as_str()).unwrap_or("");
             let right = stats.get(i).map(|s| s.as_str()).unwrap_or("");
-            println!("{}   {}", left, right);
+            println!("{:<width$}   {}", left, right, width = max_art_width);
         }
         println!("{}", quote);
     }
@@ -108,6 +115,37 @@ impl Pet {
             PetMoods::Happy
         } else {
             PetMoods::Normal
+        }
+    }
+
+    /// Checks if the pet has passed the evolution time and evolves if ready.
+    pub fn check_evolution(&mut self, store: &PetStore) -> Option<String> {
+        if self.is_dead {
+            return None;
+        }
+
+        let data = store.pets.get(&self.skin)?;
+        let rule = data.evolves_to.as_ref()?;
+
+        let age_hours = self.created.elapsed().ok()?.as_secs() / 3600;
+
+        if age_hours >= rule.min_age_hours {
+            if !store.pets.contains_key(&rule.target_skin) {
+                eprintln!(
+                    "Error: Could not find pet {} to evolve to!",
+                    &rule.target_skin
+                );
+                return None;
+            }
+
+            let old_skin = self.skin.clone();
+            self.skin = rule.target_skin.clone();
+            return Some(format!(
+                "{} evolved from {} into {}!",
+                self.name, old_skin, self.skin
+            ));
+        } else {
+            return None;
         }
     }
 

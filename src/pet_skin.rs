@@ -8,11 +8,18 @@ use serde::Deserialize;
 use crate::pet::PetMoods;
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct EvolutionConfig {
+    pub target_skin: String,
+    pub min_age_hours: u64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct PetData {
     #[serde(default)]
     pub sprites: HashMap<PetMoods, Vec<String>>,
     #[serde(default)]
     pub quotes: HashMap<PetMoods, Vec<String>>,
+    pub evolves_to: Option<EvolutionConfig>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -111,7 +111,11 @@ fn adopt_pet(pet_store: &PetStore, no_file: bool) -> std::option::Option<Pet> {
 
 /// Handles the main interaction with a valid pet.
 fn interact_pet(mut pet: Pet, save_path: &Path, pet_store: &PetStore, command: Option<PetCommand>) {
-    pet.update(); // Updates the pet's stats before we start.
+    // Update the pet before interactions.
+    if let Some(msg) = pet.check_evolution(pet_store) {
+        println!("{}", msg);
+    }
+    pet.update();
 
     // Send off the command to their handler.
     match command {
